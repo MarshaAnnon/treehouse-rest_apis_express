@@ -36,52 +36,40 @@ app.get('/quotes/:id', async (req, res)=>{
 });
 
 //Send a POST request to /quotes to  CREATE a new quote 
-app.post('/quotes', async (req,res) =>{
-    try {
-        if(req.body.author && req.body.quote){
-            const quote = await records.createQuote({
-                quote: req.body.quote,
-                author: req.body.author
-            });
-            res.status(201).json(quote);
-        } else {
-            res.status(400).json({message: "Quote and author required."});
-        }
-
-    } catch(err) {
-        res.status(500).json({message: err.message});
-    } 
-});
+app.post('/quotes', asyncHandler(async (req, res) => {
+    if(req.body.author && req.body.quote){
+        const quote = await records.createQuote({
+            quote: req.body.quote,
+            author: req.body.author
+        });
+        res.status(201).json(quote);
+    } else {
+        res.status(400).json({message: "Quote and author required."});
+    }
+}));
 
 // Send a PUT request to /quotes/:id to UPDATE (edit) a quote
-app.put('/quotes/:id', async(req,res) => {
-    try {
-        const quote = await records.getQuote(req.params.id);
-        if(quote){
-            quote.quote = req.body.quote;
-            quote.author = req.body.author;
+app.put('/quotes/:id', asyncHandler(async (req, res) => {
+    const quote = await records.getQuote(req.params.id);
+    if(quote){
+        quote.quote = req.body.quote;
+        quote.author = req.body.author;
 
-            await records.updateQuote(quote);
-            res.status(204).end();
-        } else {
-            res.status(404).json({message: "Quote Not Found"});
-        }
-        
-    } catch(err){
-        res.status(500).json({message: err.message});
+        await records.updateQuote(quote);
+        res.status(204).end();
+    } else {
+        res.status(404).json({message: "Quote Not Found"});
     }
-});
+}));
 
 // Send a DELETE request to /quotes/:id DELETE a quote 
-app.delete("/quotes/:id", async(req,res, next) => {
-    try {
-        const quote = await records.getQuote(req.params.id);
-        await records.deleteQuote(quote);
-        res.status(204).end();
-    } catch(err){
-        next(err);
-    }
-});
+app.delete("/quotes/:id", asyncHandler(async (req,res, next) => {
+    throw new Error("Uh-oh, something went wrong!")
+    const quote = await records.getQuote(req.params.id);
+    await records.deleteQuote(quote);
+    res.status(204).end();
+}));
+
 // Send a GET request to /quotes/quote/random to READ (view) a random quote
 
 app.use((req, res, next) => {
